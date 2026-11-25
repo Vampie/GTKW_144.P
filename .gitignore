@@ -1,5 +1,8 @@
 # Godot-cache
 .godot/
 
+# Gemaakte versies (maak_versie.bat)
+/GTKW_144.P/
+
 # Lokale tools
 .claude/
