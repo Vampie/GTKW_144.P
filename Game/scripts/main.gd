@@ -6,6 +6,7 @@ extends Node3D
 ##   --demo   the player shouts by itself after half a second
 ##   --bench  turn the camera for 10 seconds, print the frame rate and quit
 ##   --cam=x,y,z,tx,ty,tz   look from x,y,z at tx,ty,tz
+##   --found  the friend stands next to the player (see hunt.gd)
 
 const PEOPLE := 120
 const SITTING := 20
@@ -21,7 +22,6 @@ const PLAYER_START := Vector3(0, 0, 64)  # on the south path, close to the bench
 var park := Park.new()
 var player := Player.new()
 var env := Environment.new()
-var hud := Label.new()
 var args := OS.get_cmdline_user_args()
 var clock := 0.0
 var frames := 0
@@ -34,12 +34,10 @@ func _ready() -> void:
 	player.position = PLAYER_START
 	add_child(player)
 	_people()
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	hud.position = Vector2(12, 8)
-	hud.add_theme_constant_override("outline_size", 6)
-	hud.add_theme_color_override("font_outline_color", Color.BLACK)
-	layer.add_child(hud)
+	var hunt := Hunt.new()
+	hunt.park = park
+	hunt.player = player
+	add_child(hunt)
 	if "--demo" in args:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # so a moving mouse doesn't turn the camera
 	for a in args:
@@ -54,8 +52,6 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	hud.text = "%d fps     WASD lopen · Shift rennen · Spatie springen · linkermuisknop vasthouden: roepen · Esc: muis los" \
-		% Engine.get_frames_per_second()
 	clock += delta
 	if "--demo" in args:
 		if clock - delta < 0.5 and clock >= 0.5:

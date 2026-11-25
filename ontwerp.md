@@ -87,6 +87,16 @@ Een 3D-spel waarin je rondloopt in een grote omgeving en naar mensen roept. Elke
 
 Niet in mijlpaal 1: geluid, microfoon, doel of opdracht, menu, opslaan, dag/nacht, multiplayer en controller.
 
+## Mijlpaal 2: zoek je vriend
+
+- Ergens in het park staat een tweede kabouter met een blauwe muts. Elke ronde staat hij op een willekeurige plek bij een boom, minstens 80 m van de speler en niet op een pad. Hij blijft staan.
+- Hij hoort je 3 keer zo ver als de bezoekers: een volle roep (45 m) bereikt hem tot 135 m ver.
+- Hoort hij je roepen, dan antwoordt hij "Hier!" met een grote ballon die 3 seconden door alles heen zichtbaar is. Hij antwoordt altijd. Andere hulp is er niet.
+- Kom je binnen 2 m van hem, dan is hij gevonden. Je ziet je tijd, hoe vaak je riep en hoeveel mensen je chagrijnig maakte. Met Enter begint een nieuwe ronde.
+- Er is geen tijdslimiet en je kunt niet verliezen. De bezoekers worden niet teruggezet bij een nieuwe ronde.
+- De HUD toont bovenaan de opdracht, de tijd en het aantal keer geroepen, onderaan de besturing en rechtsboven de fps.
+- Code: `Game/scripts/hunt.gd` (rondes en HUD) en `Game/scripts/friend.gd` (de vriend). Testoptie `--found` zet de vriend naast de speler.
+
 ## Spelen en testen
 
 - Open `Game/project.godot` in Godot 4.7 en druk op F5.

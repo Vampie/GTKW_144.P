@@ -20,6 +20,7 @@ var model_path: String
 var type := Type.CURIOUS         # how the visitor reacts now; changes with its mood
 var personality := Type.CURIOUS  # how the visitor reacts when calm
 var annoyance := 0.0             # +1 per shout heard, slowly goes back to 0
+static var fed_up_total := 0     # visitors made grumpy this round; the hunt resets it
 var mode := Mode.WANDER
 var home := Transform3D()  # seat or group spot; unused while wandering
 var target := -1           # path node the visitor walks to
@@ -53,6 +54,7 @@ func hear(from: Node3D, radius: float) -> void:
 	var fed_up := annoyance >= FED_UP and type != Type.GRUMPY
 	if fed_up:
 		type = Type.GRUMPY
+		fed_up_total += 1
 	if mode == Mode.SIT and global_position.distance_to(home.origin) < 0.1:
 		global_position = home.origin + home.basis.z * 0.9 - Vector3.UP * home.origin.y  # stand up, off the bench
 	shouter = from

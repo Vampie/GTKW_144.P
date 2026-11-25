@@ -17,6 +17,7 @@ var pivot := Node3D.new()
 var ring := MeshInstance3D.new()
 var charge := -1.0      # seconds the shout button is held; below 0 when not shouting
 var shout_left := 0.0   # seconds left of the shout animation
+var shouts := 0         # shouts this round; the hunt resets it
 
 
 func _ready() -> void:
@@ -104,6 +105,7 @@ func release_shout() -> void:
 	var loud := inverse_lerp(MIN_RADIUS, MAX_RADIUS, r)
 	say("HÉ!" if loud < 0.6 else "HÉÉÉ!", 1.5, int(lerpf(36.0, 72.0, loud)))
 	get_tree().call_group("npc", "hear", self, r)
+	shouts += 1
 	play("shout", 1.0, true)
 	shout_left = 2.0  # length of the gnome's Shout animation
 	charge = -1.0
