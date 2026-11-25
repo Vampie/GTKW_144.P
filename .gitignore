@@ -1,0 +1,5 @@
+# Godot-cache
+.godot/
+
+# Lokale tools
+.claude/
