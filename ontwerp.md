@@ -26,7 +26,10 @@ Een 3D-spel waarin je rondloopt in een grote omgeving en naar mensen roept. Elke
 - Het park heeft gras, paden, bomen, bankjes en een vijver. Aan de rand liggen straten met gebouwen als decor; je kunt er niet naar binnen.
 - Een script bouwt het park op. De vijver en de hoofdpaden liggen vast. Bomen, bankjes en kleine paden worden willekeurig geplaatst met een vaste seed, dus elke keer op dezelfde plek.
 - Het is altijd een zonnige namiddag: geen dag/nacht en geen weer.
-- Modellen komen uit gratis CC0-pakketten: personages met animaties van Quaternius, de omgeving van Kenney.
+- Modellen komen uit gratis CC0-pakketten van Kenney:
+  - personages: Mini Characters 2.0 (met animaties: idle, walk, sprint, jump, sit, emote-yes, emote-no, interact);
+  - omgeving: Nature Kit, City Kit Roads, City Kit Suburban, City Kit Commercial, Car Kit en bankjes uit de Graveyard Kit of Holiday Kit.
+- Mini Characters heeft geen zwaai- of schrikanimatie. Zwaaien wordt `emote-yes` of `interact-right`, schrikken wordt `jump` of `crouch`.
 
 ## Speler
 
@@ -79,6 +82,17 @@ Een 3D-spel waarin je rondloopt in een grote omgeving en naar mensen roept. Elke
 - Minstens 30 beelden per seconde op de Iris Xe.
 
 Niet in mijlpaal 1: geluid, microfoon, doel of opdracht, menu, opslaan, dag/nacht, multiplayer en controller.
+
+## Spelen en testen
+
+- Open `Game/project.godot` in Godot 4.7 en druk op F5.
+- Zelftest van het park: `Godot_console --headless --path Game -s res://tests/selfcheck.gd`.
+- Testopties na `--` op de opdrachtregel:
+  - `--top`: het hele park van bovenaf;
+  - `--demo`: de speler roept vanzelf na een halve seconde;
+  - `--bench`: draait de camera 10 seconden rond en toont de fps;
+  - `--cam=x,y,z,tx,ty,tz`: kijkt vanaf punt x,y,z naar punt tx,ty,tz.
+- De grootte en draaiing van de modellen staan als constanten bovenaan `Game/scripts/park.gd` en `Game/scripts/person.gd`.
 
 ## Werkwijze
 
