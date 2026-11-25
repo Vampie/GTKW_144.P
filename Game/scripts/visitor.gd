@@ -32,6 +32,8 @@ var shouter: Node3D
 var waved := false
 var stuck := 0.0
 var detour := 0.0
+var dodge_left := 0.0      # seconds left of jumping out of the way of a car
+var dodge_dir := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -71,11 +73,28 @@ func hear(from: Node3D, radius: float) -> void:
 			play("angry", 1.0, true)
 
 
+## Called by a driving car that is coming at the visitor: jump to the side of its path.
+func dodge(car: Car) -> void:
+	if dodge_left > 0.0:
+		return
+	var side := car.global_basis.x
+	dodge_dir = side if (global_position - car.global_position).dot(side) > 0.0 else -side
+	dodge_left = 1.2
+	if mode == Mode.SIT and global_position.distance_to(home.origin) < 0.1:
+		global_position -= Vector3.UP * home.origin.y
+	velocity.y = 4.0  # a little hop
+	say("Aaah!", 1.5)
+	play("scared", 1.0, true)
+
+
 func _physics_process(delta: float) -> void:
 	annoyance = maxf(annoyance - delta / CALM_DOWN, 0.0)
 	if type != personality and annoyance < 1.0 and react <= 0.0:
 		type = personality  # calmed down
-	if react > 0.0:
+	if dodge_left > 0.0:
+		dodge_left -= delta
+		_walk_to(global_position + dodge_dir * 5.0, RUN, delta)
+	elif react > 0.0:
 		react -= delta
 		_react(delta)
 		if react <= 0.0:

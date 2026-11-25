@@ -89,13 +89,28 @@ Niet in mijlpaal 1: geluid, microfoon, doel of opdracht, menu, opslaan, dag/nach
 
 ## Mijlpaal 2: zoek je vriend
 
-- Ergens in het park staat een tweede kabouter met een blauwe muts. Elke ronde staat hij op een willekeurige plek bij een boom, minstens 80 m van de speler en niet op een pad. Hij blijft staan.
-- Hij hoort je 3 keer zo ver als de bezoekers: een volle roep (45 m) bereikt hem tot 135 m ver.
-- Hoort hij je roepen, dan antwoordt hij "Hier!" met een grote ballon die 3 seconden door alles heen zichtbaar is. Hij antwoordt altijd. Andere hulp is er niet.
-- Kom je binnen 2 m van hem, dan is hij gevonden. Je ziet je tijd, hoe vaak je riep en hoeveel mensen je chagrijnig maakte. Met Enter begint een nieuwe ronde.
+- Het spel begint in vrij spel. In het park staan vijf telefooncellen met glazen ruiten, elk in een eigen kleur: blauw, groen, paars, oranje en roze. Boven elke cel zweeft een draaiende gele pijl zolang er geen ronde bezig is. De blauwe staat vlak voor de plek waar de speler begint.
+- E bij een telefooncel start een ronde: zoek de kabouter in de kleur van die cel.
+- Bij elke ronde verstoppen vijf kabouter-vrienden zich, één per kleur. Hun muts en pak hebben hun kleur, en hun omtrek pulseert in die kleur, alsof ze radioactief zijn. Er hangt ook een pulserend lichtje rond hen.
+- Ze staan op een willekeurige plek bij een boom: minstens 80 m van de speler, minstens 30 m van elkaar en niet op een pad. Ze blijven staan.
+- Ze horen je 3 keer zo ver als de bezoekers: een volle roep (45 m) bereikt hen tot 135 m ver. Wie je hoort, antwoordt "Hier!" in een grote ballon in zijn eigen kleur, 3 seconden door alles heen zichtbaar.
+- Wie je gevonden hebt, loopt vanaf dan in een rijtje achter je aan. Stap je in een auto, dan gaan de gevonden kabouters op het dak staan (de kabouter heeft geen zitanimatie). Zijn telefooncel gaat dicht (geen pijl meer).
+- Na de vijfde staat er "Alle vijf gevonden!". Ze blijven bij je. In de vijver verschijnt op een eilandje een reusachtige gouden kabouter van ongeveer 22 m, met rond de vijver een sokkel in elke kleur.
+- Sta je bij een sokkel, dan zet O de kabouter van die kleur erop. Hij roept "Hoera!" en kijkt naar de gouden kabouter.
+- Staan ze alle vijf op hun sokkel, dan spuwt de gouden kabouter onophoudelijk confetti uit zijn mond en uit zijn achterwerk: telkens een fontein plus regelmatige knallen. Er verschijnt geen melding.
+- De gele pijlen boven de telefooncellen komen terug. E bij een telefooncel vraagt "Alles opnieuw beginnen?" met Yup en Nope, Nope is gekozen. Met pijl links en rechts (of A en D) kies je, met Enter bevestig je. Yup zet alles terug: vrienden naar huis, gouden kabouter en confetti weg, alle telefooncellen open.
+- Kom je bij een verkeerde kabouter, dan zegt hij "Ik ben het niet!". Kom je binnen 2 m van de juiste, dan is hij gevonden: je ziet je tijd, hoe vaak je riep en hoeveel mensen je chagrijnig maakte. Enter brengt je terug naar vrij spel.
 - Er is geen tijdslimiet en je kunt niet verliezen. De bezoekers worden niet teruggezet bij een nieuwe ronde.
-- De HUD toont bovenaan de opdracht, de tijd en het aantal keer geroepen, onderaan de besturing en rechtsboven de fps.
-- Code: `Game/scripts/hunt.gd` (rondes en HUD) en `Game/scripts/friend.gd` (de vriend). Testoptie `--found` zet de vriend naast de speler.
+- De HUD toont bovenaan de opdracht in de kleur van de ronde, de tijd en het aantal keer geroepen, onderaan de besturing en rechtsboven de fps.
+- Code: `Game/scripts/hunt.gd` (telefooncellen, rondes en HUD) en `Game/scripts/friend.gd` (de vrienden en hun gloed). Testoptie `--found` start een blauwe ronde met de blauwe vriend naast de speler.
+
+## Auto's
+
+- In elke geparkeerde auto kun je instappen: sta er binnen 3,5 m van en druk op E. Met E stap je weer uit, naast de auto.
+- Besturing: W gas, S remmen en achteruit, A en D sturen. Topsnelheid 90 km/u. De auto kan niet omslaan en stuurt alleen als hij rijdt.
+- De auto rijdt door mensen heen. Wie voor de auto staat, springt met "Aaah!" opzij.
+- Roepen wordt toeteren ("TOET!"): het werkt als roepen, maar reikt 1,5 keer zo ver.
+- Code: `Game/scripts/car.gd`. Testoptie `--drive` zet de speler in de dichtstbijzijnde auto met vol gas.
 
 ## Spelen en testen
 

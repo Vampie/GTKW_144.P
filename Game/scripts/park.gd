@@ -295,11 +295,10 @@ func _cars() -> void:
 		var along := d.cross(Vector3.UP)
 		var x := -245.0 + rng.randf_range(0.0, 20.0)
 		while x < 245.0:
-			var pos := d * (ROAD_IN + ROAD_W - 2.0) + along * x
-			_place("res://assets/cars/%s.glb" % CARS[rng.randi() % CARS.size()], pos, atan2(along.x, along.z), Vector3.ONE * CAR_SCALE)
-			var shape := BoxShape3D.new()
-			shape.size = Vector3(2.2, 2.0, 4.4)
-			_collider(shape, Transform3D(Basis(Vector3.UP, atan2(along.x, along.z)), pos + Vector3.UP))
+			var car := Car.new()  # each car is its own node, so the player can drive it away
+			car.model_path = "res://assets/cars/%s.glb" % CARS[rng.randi() % CARS.size()]
+			car.transform = Transform3D(Basis(Vector3.UP, atan2(along.x, along.z)), d * (ROAD_IN + ROAD_W - 2.0) + along * x)
+			add_child(car)
 			x += rng.randf_range(8.0, 35.0)
 
 

@@ -7,6 +7,7 @@ extends Node3D
 ##   --bench  turn the camera for 10 seconds, print the frame rate and quit
 ##   --cam=x,y,z,tx,ty,tz   look from x,y,z at tx,ty,tz
 ##   --found  the friend stands next to the player (see hunt.gd)
+##   --drive  the player gets into the nearest car and drives off at full gas
 
 const PEOPLE := 120
 const SITTING := 20
@@ -47,6 +48,11 @@ func _ready() -> void:
 		elif a.begins_with("--cam="):
 			var v := a.trim_prefix("--cam=").split_floats(",")
 			_look(Vector3(v[0], v[1], v[2]), Vector3(v[3], v[4], v[5]))
+	if "--drive" in args:  # get into the nearest car and drive off at full gas
+		var cars := get_tree().get_nodes_in_group("car")
+		cars.sort_custom(func(a: Car, b: Car) -> bool: return a.global_position.distance_to(player.global_position) < b.global_position.distance_to(player.global_position))
+		player.get_in(cars[0])
+		cars[0].autopilot = true
 	if "--bench" in args:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 

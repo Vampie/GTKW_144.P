@@ -3,21 +3,29 @@ extends Person
 
 ## The player: walks, runs, jumps and shouts. The camera hangs behind on a spring arm.
 ## Holding the left mouse button makes the shout louder; a ring on the ground shows how far it reaches.
+## E gets into the nearest parked car and out again; in a car the shout is a honk that carries further.
 
-const WALK := 4.0
-const RUN := 8.0
+const WALK := 8.0   # was the running speed
+const RUN := 14.0
 const JUMP := 6.0
 const MIN_RADIUS := 6.0
 const MAX_RADIUS := 45.0
 const FULL_CHARGE := 1.5  # seconds of holding for the loudest shout
 const MOUSE_SPEED := 0.003
 const MODEL := "res://assets/characters/gnome/gnome.glb"  # made in metres, 1.02 m tall with hat
+const REACH := 3.5        # how close a car must be to get in
+const HONK := 1.5         # a honk reaches this much further than a shout
 
+var car: Car              # the car the player drives, or null
+var nearby_car: Car       # a car close enough to get into, or null
 var pivot := Node3D.new()
+var arm := SpringArm3D.new()
 var ring := MeshInstance3D.new()
 var charge := -1.0      # seconds the shout button is held; below 0 when not shouting
 var shout_left := 0.0   # seconds left of the shout animation
 var shouts := 0         # shouts this round; the hunt resets it
+const LOOK_BACK_MS := 1500  # in a car: ms without mouse movement before the camera follows the car again
+var _looked_at := 0         # time of the last mouse movement, in ms
 
 
 func _ready() -> void:
@@ -29,7 +37,6 @@ func _ready() -> void:
 	pivot.position.y = 1.1
 	pivot.rotation.x = -0.3
 	add_child(pivot)
-	var arm := SpringArm3D.new()
 	var probe := SphereShape3D.new()
 	probe.radius = 0.3
 	arm.shape = probe
@@ -48,9 +55,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 	if event is InputEventMouseMotion and captured:
 		pivot.rotation.y -= event.relative.x * MOUSE_SPEED
+		_looked_at = Time.get_ticks_msec()
 		pivot.rotation.x = clampf(pivot.rotation.x - event.relative.y * MOUSE_SPEED, -1.2, 0.3)
 	elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	elif event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_E:
+		if car:
+			get_out()
+		elif nearby_car:
+			get_in(nearby_car)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if not captured:
 			if event.pressed:
@@ -61,7 +74,46 @@ func _unhandled_input(event: InputEvent) -> void:
 			release_shout()
 
 
+func get_in(c: Car) -> void:
+	car = c
+	car.driving = true
+	model.visible = false
+	collision_layer = 0
+	collision_mask = 0
+	arm.add_excluded_object(car.get_rid())
+	arm.spring_length = 9.0
+	pivot.position.y = 2.2
+
+
+func get_out() -> void:
+	car.driving = false
+	car.speed = 0.0
+	arm.remove_excluded_object(car.get_rid())
+	global_position = car.global_position + car.global_basis.x * 2.4  # next to the driver's door
+	car = null
+	model.visible = true
+	collision_layer = 2
+	collision_mask = 1 | 4
+	arm.spring_length = 4.0
+	pivot.position.y = 1.1
+
+
 func _physics_process(delta: float) -> void:
+	if charge >= 0.0:
+		charge += delta
+		ring.scale = Vector3(radius(), 1.0, radius())
+	if car:
+		global_position = car.global_position
+		# look around with the mouse; after a moment without mouse movement the camera
+		# swings back in behind the driving car (+Z of the pivot is behind)
+		if Time.get_ticks_msec() - _looked_at > LOOK_BACK_MS and absf(car.speed) > 1.0:
+			pivot.rotation.y = lerp_angle(pivot.rotation.y, atan2(-car.forward().x, -car.forward().z), 2.0 * delta)
+		ring.global_position = global_position + Vector3.UP * 0.15
+		return
+	nearby_car = null
+	for c: Car in get_tree().get_nodes_in_group("car"):
+		if c.global_position.distance_to(global_position) < REACH:
+			nearby_car = c
 	var input := Vector3(
 		float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)), 0.0,
 		float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
@@ -83,14 +135,11 @@ func _physics_process(delta: float) -> void:
 		play("shout")
 	else:
 		play("idle")
-	if charge >= 0.0:
-		charge += delta
-		ring.scale = Vector3(radius(), 1.0, radius())
 	ring.global_position = global_position + Vector3.UP * 0.15
 
 
 func radius() -> float:
-	return lerpf(MIN_RADIUS, MAX_RADIUS, clampf(charge / FULL_CHARGE, 0.0, 1.0))
+	return lerpf(MIN_RADIUS, MAX_RADIUS, clampf(charge / FULL_CHARGE, 0.0, 1.0)) * (HONK if car else 1.0)
 
 
 func start_shout() -> void:
@@ -102,12 +151,15 @@ func release_shout() -> void:
 	if charge < 0.0:
 		return
 	var r := radius()
-	var loud := inverse_lerp(MIN_RADIUS, MAX_RADIUS, r)
-	say("HÉ!" if loud < 0.6 else "HÉÉÉ!", 1.5, int(lerpf(36.0, 72.0, loud)))
+	var loud := clampf(charge / FULL_CHARGE, 0.0, 1.0)
+	if car:
+		say("TOET!" if loud < 0.6 else "TOEEEET!", 1.5, int(lerpf(36.0, 72.0, loud)))
+	else:
+		say("HÉ!" if loud < 0.6 else "HÉÉÉ!", 1.5, int(lerpf(36.0, 72.0, loud)))
+		play("shout", 1.0, true)
+		shout_left = 2.0  # length of the gnome's Shout animation
 	get_tree().call_group("npc", "hear", self, r)
 	shouts += 1
-	play("shout", 1.0, true)
-	shout_left = 2.0  # length of the gnome's Shout animation
 	charge = -1.0
 	ring.visible = false
 
