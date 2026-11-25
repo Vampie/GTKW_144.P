@@ -33,6 +33,8 @@ var _phase := randf() * TAU
 func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 1
+	anims = Player.GNOME
+	loops = Player.GNOME_LOOPS
 	walk_anim = 0.23  # same small steps as the player's gnome
 	run_anim = 3.2
 	setup(Player.MODEL, 1.0, 1.0)
@@ -64,6 +66,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	super(delta)
+	if not following and not anim.is_playing():  # a one-shot (Angry) has ended
+		play("idle")
 	_light.light_energy = 0.6 + 1.2 * (0.5 + 0.5 * sin(Time.get_ticks_msec() / 250.0 + _phase))  # same beat as the glow
 
 
@@ -102,14 +106,11 @@ func _physics_process(delta: float) -> void:
 	if not following:
 		return
 	var car := following.car
-	if car:
-		# on the roof: two rows, side by side, from the front to the back
-		var top := Assets.mesh(car.model_path).get_aabb().end.y * Park.CAR_SCALE
-		var spot := Vector3(-0.35 if slot % 2 == 0 else 0.35, top, (0.1 - 0.7 * (slot / 2)) * Car.FORWARD)
-		global_position = car.global_transform * spot
-		model.rotation.y = car.rotation.y + (0.0 if Car.FORWARD > 0 else PI)
+	if car:  # ride along, sitting: next to the driver, on the boot and on the bonnet
+		global_position = car.global_transform * Kart.RIDERS[slot % Kart.RIDERS.size()]
+		model.rotation.y = car.rotation.y
 		velocity = Vector3.ZERO
-		play("idle")
+		play("sit")
 		return
 	var behind := -Vector3(sin(following.model.rotation.y), 0.0, cos(following.model.rotation.y))
 	var goal := following.global_position + behind * (1.6 + 1.2 * slot)

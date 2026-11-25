@@ -87,6 +87,23 @@ func dodge(car: Car) -> void:
 	play("scared", 1.0, true)
 
 
+## Called when the player punches or kicks the visitor: "Au!", a step away, and one more point of annoyance.
+func get_hit(from: Node3D) -> void:
+	if mode == Mode.SIT and global_position.distance_to(home.origin) < 0.1:
+		global_position -= Vector3.UP * home.origin.y
+	var away := global_position - from.global_position
+	away.y = 0.0
+	dodge_dir = away.normalized()
+	dodge_left = 0.8
+	say("Au!", 1.5)
+	play("scared", 1.0, true)
+	if type != Type.HEADPHONES:
+		annoyance += 1.0
+		if annoyance >= FED_UP and type != Type.GRUMPY:
+			type = Type.GRUMPY
+			fed_up_total += 1
+
+
 func _physics_process(delta: float) -> void:
 	annoyance = maxf(annoyance - delta / CALM_DOWN, 0.0)
 	if type != personality and annoyance < 1.0 and react <= 0.0:

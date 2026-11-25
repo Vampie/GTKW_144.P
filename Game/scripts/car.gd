@@ -1,7 +1,8 @@
 class_name Car
 extends CharacterBody3D
 
-## A parked car the player can drive. Arcade handling: it cannot tip over and only steers while moving.
+## A car. Parked street cars are scenery; the gnome drives a Kart, which extends this class.
+## Arcade handling: it cannot tip over and only steers while moving.
 ## It drives through visitors; the ones in front of it jump aside (Visitor.dodge).
 
 const TOP_SPEED := 25.0     # m/s, 90 km/h
@@ -24,7 +25,6 @@ var _scare_left := 0.0
 func _ready() -> void:
 	collision_layer = 1   # the world: player and visitors bump into parked cars
 	collision_mask = 1    # world only: a driving car goes through visitors
-	add_to_group("car")
 	var mesh := Assets.mesh(model_path)
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
@@ -43,10 +43,13 @@ func forward() -> Vector3:
 
 
 func _physics_process(delta: float) -> void:
-	if not driving:
+	if not driving and speed == 0.0:
 		return
-	var gas := 1.0 if autopilot else float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))
-	var steer := float(Input.is_physical_key_pressed(KEY_A)) - float(Input.is_physical_key_pressed(KEY_D))
+	var gas := 0.0   # without a driver (after a bail-out) the car rolls out
+	var steer := 0.0
+	if driving:
+		gas = 1.0 if autopilot else float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))
+		steer = float(Input.is_physical_key_pressed(KEY_A)) - float(Input.is_physical_key_pressed(KEY_D))
 	if gas > 0.0:
 		speed = move_toward(speed, TOP_SPEED, (ACCEL if speed >= 0.0 else BRAKE) * delta)
 	elif gas < 0.0:

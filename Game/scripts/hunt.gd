@@ -29,7 +29,7 @@ const PEDESTAL_REACH := 3.5
 const ACCENT := Color(0.36, 0.62, 1.0)
 const PANEL := Color(0.07, 0.09, 0.13, 0.78)
 const MUTED := Color(0.7, 0.75, 0.82)
-const WALK_CONTROLS := "WASD lopen  ·  Shift rennen  ·  Spatie springen  ·  Linkermuisknop vasthouden: roepen  ·  E: instappen  ·  Esc: muis los"
+const WALK_CONTROLS := "WASD wandelen  ·  Shift lopen  ·  Ctrl sluipen  ·  Spatie springen  ·  F stompen  ·  G trappen  ·  Linkermuisknop vasthouden: roepen  ·  E: instappen  ·  Esc: muis los"
 const CAR_CONTROLS := "W gas  ·  S remmen / achteruit  ·  A D sturen  ·  Linkermuisknop vasthouden: toeteren  ·  E: uitstappen  ·  Esc: muis los"
 
 var park: Park
@@ -239,6 +239,7 @@ func _process(delta: float) -> void:
 		if i != target:
 			if not friends[i].bubble.visible:
 				friends[i].say("Ik ben het niet!", 2.0, 48)
+				friends[i].play("angry", 1.0, true)
 			continue
 		state = State.FOUND
 		done[target] = true

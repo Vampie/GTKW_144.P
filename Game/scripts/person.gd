@@ -14,6 +14,8 @@ const ANIMS := {"idle": "Idle", "walk": "Walk", "sprint": "Run", "jump": "Jump",
 	"sit": "SitDown", "wave": "Jump", "angry": "Punch", "scared": "RecieveHit", "shout": "Shout"}
 const LOOPS := ["idle", "walk", "sprint"]
 
+var anims: Dictionary = ANIMS  # a model with other clip names sets its own table before setup()
+var loops: Array = LOOPS        # and which of them repeat
 var walk_anim := WALK_ANIM  # a model with other step lengths sets its own values before setup()
 var run_anim := RUN_ANIM
 var model: Node3D
@@ -36,8 +38,8 @@ func setup(model_path: String, model_scale := SCALE, height := 1.7) -> void:
 	model.scale = Vector3.ONE * model_scale
 	add_child(model)
 	anim = model.find_child("AnimationPlayer", true, false)
-	for n: String in LOOPS:
-		anim.get_animation(ANIMS[n]).loop_mode = Animation.LOOP_LINEAR
+	for n: String in loops:
+		anim.get_animation(anims[n]).loop_mode = Animation.LOOP_LINEAR
 	bubble.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	bubble.no_depth_test = true
 	bubble.fixed_size = true
@@ -49,12 +51,13 @@ func setup(model_path: String, model_scale := SCALE, height := 1.7) -> void:
 
 
 ## One-shot animations (sit, jump) hold their last pose; restart plays one again from the start.
-func play(what: String, speed := 1.0, restart := false) -> void:
-	var anim_name: String = ANIMS[what]
+## blend 0 jumps straight to the first frame (for clips that start exactly where the last one ended).
+func play(what: String, speed := 1.0, restart := false, blend := 0.2) -> void:
+	var anim_name: String = anims[what]
 	if restart:
 		anim.stop(true)
 	if restart or anim.assigned_animation != anim_name:
-		anim.play(anim_name, 0.2)
+		anim.play(anim_name, blend)
 	anim.speed_scale = speed
 
 

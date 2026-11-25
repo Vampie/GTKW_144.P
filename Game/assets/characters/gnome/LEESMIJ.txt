@@ -2,26 +2,60 @@ Kabouter - spelerfiguur
 =======================
 
 Bestand:  gnome.glb  (glTF 2.0 binair, alles in een bestand, geen losse textures)
-Inhoud:   1 skelet (armature "Gnome", 19 botten) + 8 mesh-onderdelen die er allemaal aan vastzitten
-          (Body, Head, Beard, Hat, Arm_L, Arm_R, Leg_L, Leg_R), ca. 30.500 driehoeken.
+Inhoud:   1 skelet (armature "Gnome", 19 botten) + 8 mesh-onderdelen die er allemaal aan vastzitten,
+          ca. 30.500 driehoeken, 33 animatieclips (24 fps).
 Maat:     1 eenheid = 1 meter; de kabouter is 1,02 m hoog inclusief muts, voeten op y = 0.
 Richting: kijkt naar +Z (glTF-standaard), Y is omhoog.
 
-Animaties (24 fps, allemaal naadloos te herhalen)
--------------------------------------------------
-Idle      2,50 s   stilstaan                          ter plaatse
-Walk      1,00 s   wandelen                           ter plaatse
-Run       0,67 s   lopen en rennen                    ter plaatse
-Jump      1,00 s   zweefhouding: springen en vallen   ter plaatse
-Angry     2,00 s   vuisten omhoog, stampen            ter plaatse (extra)
-Shout     2,00 s   roepen, mond gaat open             ter plaatse (extra)
-JumpFull  1,50 s   volledige sprong met afzet en landing - NIET ter plaatse:
-                   het heupbot gaat 22 cm omhoog. Alleen als losse actie gebruiken.
+Geen root motion: het bot "Root" beweegt in geen enkele clip. Vier clips verplaatsen de heup wel
+en zijn gemarkeerd met [NIET ter plaatse]. Volledige uitleg voor het inbouwen: AGENT_GIDS.md.
 
-Geen root motion: het bot "Root" beweegt in geen enkele clip. Bij Idle/Walk/Run deint
-alleen het bovenlijf enkele millimeters tot 3 cm op en neer.
+Animaties
+---------
+Bewegen
+  Idle        2,50 s  lus       stilstaan
+  Walk        1,00 s  lus       wandelen
+  Run         0,67 s  lus       lopen en rennen
+  Sprint      0,50 s  lus       voluit spurten, sterk voorover
+  Crouch      2,50 s  lus       gehurkt stilzitten; heup 6 cm lager
+  CrouchWalk  1,00 s  lus       gehurkt sluipen
+  Turn        0,83 s  lus       ter plaatse trappelen terwijl de code het lichaam draait
 
-SitDown, Punch en RecieveHit zitten er niet in.
+Lucht en hindernissen
+  Jump        1,00 s  lus       zweefhouding zolang de figuur in de lucht is
+  Leap        1,25 s  een keer  aanloopsprong: afzetten, strekken, landen; de code geeft afstand en hoogte
+  Fall        0,67 s  lus       lang vallen, armen en benen maaien
+  Land        0,58 s  een keer  begint diep door de knieen (landing) en veert op naar staan
+  Climb       1,83 s  een keer  optrekken aan een rand; eindigt 0,45 m hoger en 0,20 m verder naar voren  [NIET ter plaatse]
+  JumpFull    1,50 s  lus       volledige sprong met afzet en landing; heup gaat 22 cm omhoog  [NIET ter plaatse]
+
+Vechten
+  Punch       0,67 s  een keer  rechtse directe; raakmoment op 50 %
+  Kick        0,92 s  een keer  voorwaartse trap met rechts; raakmoment op 48 %
+  Block       2,00 s  lus       boksverdediging, vuisten voor de kin
+  Dodge       0,75 s  een keer  wegduiken naar links en terug
+  Hit         0,58 s  een keer  klap incasseren, achterover veren
+  KnockDown   1,08 s  een keer  achterover tegen de grond; EINDIGT LIGGEND op de rug
+  GetUp       1,42 s  een keer  BEGINT LIGGEND, komt via zit en hurk overeind
+  Die         1,67 s  een keer  naar de borst grijpen, door de knieen, achterover; EINDIGT LIGGEND
+
+Wapens en voorwerpen
+  Aim         2,50 s  lus       rechterarm gestrekt naar voren op schouderhoogte, linkerhand ondersteunt
+  Shoot       0,33 s  lus       terugslag; begint en eindigt in de Aim-houding, mag herhaald worden
+  Reload      1,67 s  een keer  herladen; begint en eindigt in de Aim-houding
+  Throw       1,00 s  een keer  bovenhandse worp met rechts; loslaten op 54 %
+  PickUp      1,08 s  een keer  bukken en met rechts iets oprapen; laagste punt op 40-52 %
+
+Voertuigen en zitten
+  EnterCar    2,50 s  een keer  portier open, instappen, zitten, portier dicht; eindigt 0,40 m naar rechts  [NIET ter plaatse]
+  Drive       2,00 s  lus       zittend rijden, handen aan het stuur
+  ExitCar     2,50 s  een keer  EnterCar achterstevoren; begint in Drive-houding 0,40 m rechts, eindigt staand op de oorsprong  [NIET ter plaatse]
+  BailOut     1,42 s  een keer  begint in Drive-houding, gaat plat, rolt een keer zijwaarts om de lengteas, staat op
+  Sit         2,50 s  lus       gewoon zitten, handen op de knieen
+
+Extra
+  Angry       2,00 s  lus       vuisten omhoog, stampen
+  Shout       2,00 s  lus       roepen, mond gaat open
 
 Botten
 ------
@@ -29,8 +63,11 @@ Root > Hips > Body > Head > (Hat, Beard, Jaw)
               Body > UpperArm_L/R > LowerArm_L/R > Hand_L/R
        Hips > UpperLeg_L/R > LowerLeg_L/R > Foot_L/R
 
+Niet getest in Godot. De meeste clips zijn alleen nagemeten, niet visueel beoordeeld.
+
 Overige bestanden
 -----------------
-viewer.html   dubbelklikken om het model en de clips te bekijken (heeft internet nodig)
+AGENT_GIDS.md gids voor wie (of welke agent) het model inbouwt
+viewer.html   dubbelklikken om het model en alle clips te bekijken (heeft internet nodig)
 gnome.blend   Blender-bronbestand (Blender 5.2)
 preview.png   voor-, zij- en achteraanzicht

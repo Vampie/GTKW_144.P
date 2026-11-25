@@ -68,6 +68,7 @@ func _ready() -> void:
 	_streets()
 	_buildings()
 	_cars()
+	_karts()
 	_groups()
 	for path: String in _batches:
 		var small := path.contains("flower") or path.contains("grass")
@@ -300,6 +301,21 @@ func _cars() -> void:
 			car.transform = Transform3D(Basis(Vector3.UP, atan2(along.x, along.z)), d * (ROAD_IN + ROAD_W - 2.0) + along * x)
 			add_child(car)
 			x += rng.randf_range(8.0, 35.0)
+
+
+## Gnome cars: one beside each main path, between the pond and the big ring, pointing outward.
+func _karts() -> void:
+	var colors := [Color(0.9, 0.2, 0.15), Color(0.95, 0.75, 0.1), Color(0.15, 0.6, 0.85), Color(0.95, 0.95, 0.95)]
+	for k in 4:
+		var d := _dir(k * TAU / 4)
+		var side := d.cross(Vector3.UP)
+		var pos := d * 80.0 - side * 5.0
+		while _near(trees, pos, 3.5):  # step outward until no tree is in the way
+			pos += d * 3.0
+		var kart := Kart.new()
+		kart.color = colors[k]
+		kart.transform = Transform3D(Basis(Vector3.UP, k * TAU / 4), pos)
+		add_child(kart)
 
 
 func _groups() -> void:

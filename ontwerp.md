@@ -106,11 +106,23 @@ Niet in mijlpaal 1: geluid, microfoon, doel of opdracht, menu, opslaan, dag/nach
 
 ## Auto's
 
-- In elke geparkeerde auto kun je instappen: sta er binnen 3,5 m van en druk op E. Met E stap je weer uit, naast de auto.
+- De geparkeerde auto's langs de straten zijn decor. De kabouter rijdt in een kabouterauto: een kleine open auto uit blokken, gemaakt op maat van zijn auto-animaties. Hij heeft links een portier, een stoel op vloerhoogte en het stuur op 0,34 m. Er staan er vier in het park, naast elk hoofdpad tussen de vijver en de grote ring.
+- Sta binnen 2,5 m van een kabouterauto en druk op E. De kabouter speelt `EnterCar`: het portier gaat open, hij stapt in, en het portier gaat weer dicht. Daarna rijdt hij met `Drive`, met zijn handen aan het stuur.
+- E stapt uit met `ExitCar`. Rijdt de auto harder dan 6 m/s, dan springt de kabouter eruit met `BailOut` en rolt de auto zonder bestuurder uit.
 - Besturing: W gas, S remmen en achteruit, A en D sturen. Topsnelheid 90 km/u. De auto kan niet omslaan en stuurt alleen als hij rijdt.
-- De auto rijdt door mensen heen. Wie voor de auto staat, springt met "Aaah!" opzij.
+- De auto rijdt door mensen heen. Wie ervoor staat, springt met "Aaah!" opzij.
 - Roepen wordt toeteren ("TOET!"): het werkt als roepen, maar reikt 1,5 keer zo ver.
-- Code: `Game/scripts/car.gd`. Testoptie `--drive` zet de speler in de dichtstbijzijnde auto met vol gas.
+- Gevonden vrienden rijden zittend mee (`Sit`): naast de bestuurder, op de kofferbak en op de motorkap.
+- Code: `Game/scripts/kart.gd` (de kabouterauto) en `Game/scripts/car.gd` (rijden). Testoptie `--drive` zet de speler in de dichtstbijzijnde kabouterauto met vol gas.
+
+## Bewegingen van de kabouter
+
+- Muiswiel zoomt de camera in en uit (van 0,35 tot 3 keer de gewone afstand), ook in de auto.
+- WASD wandelen (8 m/s, `Run`), Shift lopen (14 m/s, `Sprint`), Ctrl sluipen (2,5 m/s, `CrouchWalk`; stilstaand `Crouch`).
+- Spatie springt: stilstaand met `Jump`, in beweging een aanloopsprong met `Leap`. Valt hij lang, dan speelt `Fall`; na meer dan 0,45 s in de lucht landt hij met `Land`.
+- F stompt (`Punch`), G trapt (`Kick`). Een bezoeker die geraakt wordt, roept "Au!", stapt weg en ergert zich een punt meer.
+- Een verkeerde gekleurde vriend wordt boos (`Angry`) als je bij hem komt.
+- Niet gebruikt: `Turn`, `Climb`, `JumpFull`, `Block`, `Dodge`, `Hit` (alleen voor vrienden), `KnockDown`, `GetUp`, `Die`, `Aim`, `Shoot`, `Reload`, `Throw` en `PickUp`. Daarvoor heeft het spel nog geen hindernissen, gevaar of voorwerpen.
 
 ## Spelen en testen
 
