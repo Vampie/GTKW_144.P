@@ -28,6 +28,23 @@ func _process(_delta: float) -> bool:
 	check(park.seats.size() >= 16, "te weinig zitplaatsen: %d" % park.seats.size())
 	check(park.spots.size() == 9, "groepjes niet gevonden: %d plekken" % park.spots.size())
 
+	# mood: three shouts make a curious visitor grumpy, calming down brings it back
+	var v := Visitor.new()
+	v.park = park
+	v.model_path = "res://assets/characters/Casual2_Male.gltf"
+	root.add_child(v)
+	var shouter := Node3D.new()
+	root.add_child(shouter)
+	v.hear(shouter, 10.0)
+	v.hear(shouter, 10.0)
+	check(v.type == Visitor.Type.CURIOUS, "na twee keer roepen al chagrijnig")
+	v.hear(shouter, 10.0)
+	check(v.type == Visitor.Type.GRUMPY and v.bubble.text == "Nu is het genoeg!", "drie keer roepen maakt niet chagrijnig")
+	v.react = 0.0
+	v.annoyance = 0.5
+	v._physics_process(0.016)
+	check(v.type == Visitor.Type.CURIOUS, "kalmeert niet")
+
 	print("selfcheck %s: %d padpunten, %d bomen, %d zitplaatsen" %
 		["MISLUKT" if failed else "ok", park.points.size(), park.trees.size(), park.seats.size()])
 	quit(1 if failed else 0)

@@ -7,10 +7,12 @@ extends Node3D
 ##   --bench  turn the camera for 10 seconds, print the frame rate and quit
 ##   --cam=x,y,z,tx,ty,tz   look from x,y,z at tx,ty,tz
 
-const PEOPLE := 30
-const SITTING := 8
-const MODELS := ["female-a", "female-b", "female-c", "female-d", "female-e", "female-f",
-	"male-b", "male-c", "male-d", "male-e", "male-f", "male-g", "worker"]
+const PEOPLE := 120
+const SITTING := 20
+const MODELS := ["Casual_Female", "Casual2_Female", "Casual2_Male", "Casual3_Female", "Casual3_Male",
+	"Chef_Female", "Chef_Male", "Doctor_Female_Old", "Doctor_Female_Young", "Doctor_Male_Old",
+	"Doctor_Male_Young", "OldClassy_Female", "OldClassy_Male", "Suit_Female", "Worker_Female",
+	"Worker_Male", "Cowboy_Female", "Cowboy_Male", "Kimono_Female", "Kimono_Male"]
 const TYPES := [Visitor.Type.CURIOUS, Visitor.Type.CURIOUS, Visitor.Type.CURIOUS, Visitor.Type.CURIOUS,
 	Visitor.Type.SKITTISH, Visitor.Type.SKITTISH, Visitor.Type.SKITTISH,
 	Visitor.Type.GRUMPY, Visitor.Type.GRUMPY, Visitor.Type.HEADPHONES, Visitor.Type.HEADPHONES]
@@ -109,7 +111,7 @@ func _people() -> void:
 	for n in PEOPLE:
 		var v := Visitor.new()
 		v.park = park
-		v.model_path = "res://assets/characters/character-%s.glb" % MODELS[rng.randi() % MODELS.size()]
+		v.model_path = "res://assets/characters/%s.gltf" % MODELS[rng.randi() % MODELS.size()]
 		v.type = TYPES[rng.randi() % TYPES.size()]
 		if n < SITTING:
 			v.mode = Visitor.Mode.SIT

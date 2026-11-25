@@ -10,12 +10,16 @@ enum Mode { WANDER, SIT, STAND }
 const WALK := 1.6
 const RUN := 6.0
 const REACT_TIME := 10.0  # seconds before a visitor goes back to what it was doing
+const FED_UP := 3.0       # annoyance at which anyone who hears you turns grumpy
+const CALM_DOWN := 20.0   # seconds to forget one shout
 const CURIOUS_LINES := ["Ja?", "Hallo?", "Wie roept daar?"]
 const GRUMPY_LINES := ["Wat?!", "Niet zo roepen!", "Hou je mond!", "Pfff..."]
 
 var park: Park
 var model_path: String
-var type := Type.CURIOUS
+var type := Type.CURIOUS         # how the visitor reacts now; changes with its mood
+var personality := Type.CURIOUS  # how the visitor reacts when calm
+var annoyance := 0.0             # +1 per shout heard, slowly goes back to 0
 var mode := Mode.WANDER
 var home := Transform3D()  # seat or group spot; unused while wandering
 var target := -1           # path node the visitor walks to
@@ -34,6 +38,7 @@ func _ready() -> void:
 	collision_mask = 1  # world only: visitors walk through each other instead of jamming the paths
 	setup(model_path)
 	add_to_group("npc")
+	personality = type
 	lane = Vector3(randf_range(-1.2, 1.2), 0.0, randf_range(-1.2, 1.2))
 
 
@@ -44,6 +49,10 @@ func hear(from: Node3D, radius: float) -> void:
 	if type == Type.HEADPHONES:
 		say("La la la...", 2.0)  # hears only music; the default font has no music note glyph
 		return
+	annoyance += 1.0
+	var fed_up := annoyance >= FED_UP and type != Type.GRUMPY
+	if fed_up:
+		type = Type.GRUMPY
 	if mode == Mode.SIT and global_position.distance_to(home.origin) < 0.1:
 		global_position = home.origin + home.basis.z * 0.9 - Vector3.UP * home.origin.y  # stand up, off the bench
 	shouter = from
@@ -54,13 +63,16 @@ func hear(from: Node3D, radius: float) -> void:
 			say(CURIOUS_LINES.pick_random())
 		Type.SKITTISH:
 			say("Aaah!", 2.0)
-			play("jump")
+			play("scared", 1.0, true)
 		Type.GRUMPY:
-			say(GRUMPY_LINES.pick_random(), 4.0)
-			play("emote-no")
+			say("Nu is het genoeg!" if fed_up else GRUMPY_LINES.pick_random(), 4.0)
+			play("angry", 1.0, true)
 
 
 func _physics_process(delta: float) -> void:
+	annoyance = maxf(annoyance - delta / CALM_DOWN, 0.0)
+	if type != personality and annoyance < 1.0 and react <= 0.0:
+		type = personality  # calmed down
 	if react > 0.0:
 		react -= delta
 		_react(delta)
@@ -85,14 +97,15 @@ func _react(delta: float) -> void:
 				if not waved:
 					waved = true
 					say("Hoi!", 3.0)
-					play("emote-yes")
+					play("wave", 1.0, true)
 		Type.SKITTISH:
 			if react > REACT_TIME - 0.6:
-				_halt(delta)  # the jump animation is the scare
+				_halt(delta)  # the scared animation plays first
 			elif react > REACT_TIME - 6.0:
 				_walk_to(global_position - to.normalized() * 10.0, RUN, delta)
 			else:
 				_halt(delta)
+				play("idle")
 		Type.GRUMPY:
 			_halt(delta)
 			face(to, delta)

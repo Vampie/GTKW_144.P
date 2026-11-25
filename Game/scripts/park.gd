@@ -27,8 +27,8 @@ const BENCH_TURN := 0.0
 const LAMP_TURN := 0.0
 const ROAD_TURN := 0.0
 const BUILDING_TURN := 0.0
-const SEAT_FORWARD := -0.25  # seat position relative to the middle of the bench
-const SEAT_HEIGHT := 0.55    # the sit animation sits on the ground, the bench seat is higher
+const SEAT_FORWARD := 0.35   # where a sitter stands before sitting down, from the middle of the bench
+const SEAT_HEIGHT := 0.0     # the sit animation already lowers the hips onto chair height
 
 const TREES := ["tree_default", "tree_oak", "tree_detailed", "tree_fat", "tree_simple",
 	"tree_tall", "tree_default_dark", "tree_oak_dark", "tree_pineRoundA", "tree_pineTallA"]

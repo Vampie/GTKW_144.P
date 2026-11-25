@@ -11,24 +11,28 @@ const MIN_RADIUS := 6.0
 const MAX_RADIUS := 45.0
 const FULL_CHARGE := 1.5  # seconds of holding for the loudest shout
 const MOUSE_SPEED := 0.003
+const MODEL := "res://assets/characters/gnome/gnome.glb"  # made in metres, 1.02 m tall with hat
 
 var pivot := Node3D.new()
 var ring := MeshInstance3D.new()
-var charge := -1.0  # seconds the shout button is held; below 0 when not shouting
+var charge := -1.0      # seconds the shout button is held; below 0 when not shouting
+var shout_left := 0.0   # seconds left of the shout animation
 
 
 func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 1 | 4  # world and visitors
-	setup("res://assets/characters/character-male-a.glb")
-	pivot.position.y = 1.6
+	walk_anim = 0.23  # the gnome takes small steps (measured from its feet)
+	run_anim = 3.2    # measured 0.8, but true-to-speed legs look too frantic; now 1.25x when walking, 2.5x when running
+	setup(MODEL, 1.0, 1.0)
+	pivot.position.y = 1.1
 	pivot.rotation.x = -0.3
 	add_child(pivot)
 	var arm := SpringArm3D.new()
 	var probe := SphereShape3D.new()
 	probe.radius = 0.3
 	arm.shape = probe
-	arm.spring_length = 6.0
+	arm.spring_length = 4.0
 	arm.collision_mask = 1
 	pivot.add_child(arm)
 	arm.add_excluded_object(get_rid())
@@ -69,12 +73,15 @@ func _physics_process(delta: float) -> void:
 		velocity.y = JUMP
 	move_and_slide()
 	face(dir, delta)
+	shout_left -= delta
 	if not is_on_floor():
-		play("jump" if velocity.y > 0.0 else "fall")
-	elif dir == Vector3.ZERO:
-		play("idle")
-	else:
+		play("jump")
+	elif dir != Vector3.ZERO:
 		play_move(speed)
+	elif shout_left > 0.0:
+		play("shout")
+	else:
+		play("idle")
 	if charge >= 0.0:
 		charge += delta
 		ring.scale = Vector3(radius(), 1.0, radius())
@@ -97,6 +104,8 @@ func release_shout() -> void:
 	var loud := inverse_lerp(MIN_RADIUS, MAX_RADIUS, r)
 	say("HÉ!" if loud < 0.6 else "HÉÉÉ!", 1.5, int(lerpf(36.0, 72.0, loud)))
 	get_tree().call_group("npc", "hear", self, r)
+	play("shout", 1.0, true)
+	shout_left = 2.0  # length of the gnome's Shout animation
 	charge = -1.0
 	ring.visible = false
 

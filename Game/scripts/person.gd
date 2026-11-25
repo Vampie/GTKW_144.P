@@ -3,11 +3,19 @@ extends CharacterBody3D
 
 ## Shared body of the player and the park visitors: model, animations and speech bubble.
 
-const SCALE := 2.4           # Kenney mini characters are 0.7 tall; this makes them about 1.7 m
-const WALK_ANIM := 2.5       # speed in m/s at which the walk animation plays at normal speed
-const RUN_ANIM := 5.5        # same for the sprint animation
-const LOOPS := ["idle", "walk", "sprint", "sit", "fall"]
+const SCALE := 0.55          # Quaternius characters are about 3.2 tall; this makes them about 1.75 m
+const WALK_ANIM := 0.8       # ground speed in m/s the Quaternius walk animation was made for (measured from the feet)
+const RUN_ANIM := 2.3        # same for the run animation
+const MAX_ANIM_SPEED := 3.0  # never play a walk or run faster than this; above it the feet slide instead
+# What the game asks for -> animation in the models. The Quaternius pack has no wave
+# or angry emote, so a jump says hello and a punch in the air says go away.
+# Only the player's gnome has "Shout".
+const ANIMS := {"idle": "Idle", "walk": "Walk", "sprint": "Run", "jump": "Jump",
+	"sit": "SitDown", "wave": "Jump", "angry": "Punch", "scared": "RecieveHit", "shout": "Shout"}
+const LOOPS := ["idle", "walk", "sprint"]
 
+var walk_anim := WALK_ANIM  # a model with other step lengths sets its own values before setup()
+var run_anim := RUN_ANIM
 var model: Node3D
 var anim: AnimationPlayer
 var bubble := Label3D.new()
@@ -15,41 +23,46 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _bubble_left := 0.0
 
 
-func setup(model_path: String) -> void:
+## height: of the person in metres after scaling; sets the collision capsule and the speech bubble.
+func setup(model_path: String, model_scale := SCALE, height := 1.7) -> void:
 	var capsule := CapsuleShape3D.new()
-	capsule.radius = 0.35
-	capsule.height = 1.7
+	capsule.radius = minf(0.35, height / 3.0)
+	capsule.height = height
 	var shape := CollisionShape3D.new()
 	shape.shape = capsule
-	shape.position.y = 0.85
+	shape.position.y = height / 2.0
 	add_child(shape)
-	model = load(model_path).instantiate()
-	model.scale = Vector3.ONE * SCALE
+	model = load(model_path).instantiate()  # looks along +Z
+	model.scale = Vector3.ONE * model_scale
 	add_child(model)
 	anim = model.find_child("AnimationPlayer", true, false)
 	for n: String in LOOPS:
-		anim.get_animation(n).loop_mode = Animation.LOOP_LINEAR
+		anim.get_animation(ANIMS[n]).loop_mode = Animation.LOOP_LINEAR
 	bubble.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	bubble.no_depth_test = true
 	bubble.fixed_size = true
 	bubble.pixel_size = 0.0012
 	bubble.outline_size = 12
-	bubble.position.y = 2.4
+	bubble.position.y = height * 1.4
 	bubble.visible = false
 	add_child(bubble)
 
 
-func play(anim_name: String, speed := 1.0) -> void:
-	if anim.current_animation != anim_name or not anim.is_playing():
+## One-shot animations (sit, jump) hold their last pose; restart plays one again from the start.
+func play(what: String, speed := 1.0, restart := false) -> void:
+	var anim_name: String = ANIMS[what]
+	if restart:
+		anim.stop(true)
+	if restart or anim.assigned_animation != anim_name:
 		anim.play(anim_name, 0.2)
 	anim.speed_scale = speed
 
 
 func play_move(speed: float) -> void:
 	if speed < 3.0:
-		play("walk", speed / WALK_ANIM)
+		play("walk", minf(speed / walk_anim, MAX_ANIM_SPEED))
 	else:
-		play("sprint", speed / RUN_ANIM)
+		play("sprint", minf(speed / run_anim, MAX_ANIM_SPEED))
 
 
 func say(text: String, seconds := 3.0, size := 40) -> void:

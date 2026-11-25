@@ -26,14 +26,15 @@ Een 3D-spel waarin je rondloopt in een grote omgeving en naar mensen roept. Elke
 - Het park heeft gras, paden, bomen, bankjes en een vijver. Aan de rand liggen straten met gebouwen als decor; je kunt er niet naar binnen.
 - Een script bouwt het park op. De vijver en de hoofdpaden liggen vast. Bomen, bankjes en kleine paden worden willekeurig geplaatst met een vaste seed, dus elke keer op dezelfde plek.
 - Het is altijd een zonnige namiddag: geen dag/nacht en geen weer.
-- Modellen komen uit gratis CC0-pakketten van Kenney:
-  - personages: Mini Characters 2.0 (met animaties: idle, walk, sprint, jump, sit, emote-yes, emote-no, interact);
-  - omgeving: Nature Kit, City Kit Roads, City Kit Suburban, City Kit Commercial, Car Kit en bankjes uit de Graveyard Kit of Holiday Kit.
-- Mini Characters heeft geen zwaai- of schrikanimatie. Zwaaien wordt `emote-yes` of `interact-right`, schrikken wordt `jump` of `crouch`.
+- Modellen komen uit gratis CC0-pakketten:
+  - personages: Ultimate Animated Characters van Quaternius (20 figuren, met animaties zoals Idle, Walk, Run, Jump, SitDown, Punch en RecieveHit);
+  - omgeving, van Kenney: Nature Kit, City Kit Roads, City Kit Suburban, City Kit Commercial, Car Kit en bankjes uit de Graveyard Kit of Holiday Kit.
+- Het personagepakket heeft geen zwaai- of boosanimatie. Groeten wordt een sprongetje (`Jump`), boos zijn een stoot in de lucht (`Punch`) en schrikken `RecieveHit`. Die koppeling staat in `ANIMS` bovenaan `Game/scripts/person.gd`.
 
 ## Speler
 
 - Third-person: de camera zweeft achter het personage en gaat niet door muren.
+- Het personage is een kabouter van 1 m hoog, een eigen model in `Game/assets/characters/gnome/`. Hij heeft de animaties Idle, Walk, Run, Jump en Shout. Shout speelt na het roepen, zolang hij stilstaat.
 - Besturing met toetsenbord en muis:
 
 | Actie | Toets |
@@ -65,6 +66,9 @@ Een 3D-spel waarin je rondloopt in een grote omgeving en naar mensen roept. Elke
 | Koptelefoon | Negeert je |
 
 - De reactie verschijnt in een tekstballon boven het hoofd. Na ongeveer 10 seconden gaan de mensen weer hun gang.
+- Humeur: elke keer dat iemand je hoort, ergert hij zich één punt meer. Bij drie punten wordt hij chagrijnig en zegt hij "Nu is het genoeg!".
+- Per 20 seconden zonder roepen zakt de ergernis één punt. Onder één punt reageert hij weer volgens zijn eigen karakter.
+- Mensen met een koptelefoon horen je niet en ergeren zich dus ook niet.
 
 ## Geluid
 
