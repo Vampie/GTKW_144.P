@@ -10,6 +10,7 @@ const ACCEL := 9.0
 const BRAKE := 22.0
 const REVERSE := 7.0        # top speed backwards
 const ROLL_OUT := 3.0       # slowing down without gas
+const EMPTY_ROLL_OUT := 9.0 # slowing down with nobody in it (after a bail-out)
 const STEER := 1.8          # radians per second at full lock
 const SCARE_DISTANCE := 12.0  # visitors this far ahead jump aside
 const FORWARD := 1.0        # +1 when the model's front is +Z, -1 when it is -Z
@@ -55,7 +56,7 @@ func _physics_process(delta: float) -> void:
 	elif gas < 0.0:
 		speed = move_toward(speed, -REVERSE, (BRAKE if speed > 0.0 else ACCEL) * delta)
 	else:
-		speed = move_toward(speed, 0.0, ROLL_OUT * delta)
+		speed = move_toward(speed, 0.0, (ROLL_OUT if driving else EMPTY_ROLL_OUT) * delta)
 	# steering works like a real car: none when standing still, mirrored when reversing
 	rotation.y += steer * STEER * delta * clampf(speed / 6.0, -1.0, 1.0)
 	var v := forward() * speed

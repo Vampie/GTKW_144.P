@@ -9,14 +9,15 @@ extends Node
 ## around it; E (or O) at a pedestal puts that colour's friend on it. With all five placed the giant spews
 ## confetti from its mouth until the player resets everything at a phone booth (asked yup / nope).
 ## A round ends within FOUND_DISTANCE of the right friend; E (or Enter) goes back to free play.
-## Test option "--found" starts a blue round with the blue friend right next to the player.
+## Test options: "--found" starts a blue round with the blue friend right next to the player,
+## "--finale" puts the last friend on his pedestal (streamers, camera turn, shout).
 
 enum State { FREE, SEARCHING, FOUND, FINALE }
 
 const COLORS := [["blauwe", Color(0.2, 0.45, 0.95)], ["groene", Color(0.2, 0.7, 0.25)],
 	["paarse", Color(0.6, 0.3, 0.9)], ["oranje", Color(1.0, 0.55, 0.1)], ["roze", Color(1.0, 0.45, 0.72)]]
 # One booth per colour, on the lawn next to a main path; the first is just in front of the player's start.
-const BOOTHS := [Vector3(7, 0, 59), Vector3(59, 0, -7), Vector3(-7, 0, -59), Vector3(-59, 0, 7), Vector3(7, 0, 150)]
+const BOOTHS := [Vector3(7, 0, 59), Vector3(59, 0, -7), Vector3(-7, 0, -59), Vector3(-59, 0, 7), Vector3(7, 0, 100)]
 const START_REACH := 2.5     # from the middle of a phone booth
 const ARROW_HEIGHT := 4.2
 const MIN_DISTANCE := 80.0   # friends hide at least this far from the player
@@ -62,6 +63,8 @@ var _ask_yes := false                # the highlighted answer; Nope by default
 var _yup: PanelContainer
 var _nope: PanelContainer
 var _end := Control.new()
+var _map := Minimap.new()            # shown while no friend is being searched for
+var _streamers := Streamers.new()    # fall over the screen when the last friend is home
 var _end_time := Label.new()
 var _end_shouts := Label.new()
 var _end_annoyed := Label.new()
@@ -82,6 +85,14 @@ func _ready() -> void:
 	if "--found" in OS.get_cmdline_user_args():
 		start_round(0)
 		friends[0].global_position = player.global_position + Vector3(1.0, 0.0, -1.0)
+	if "--finale" in OS.get_cmdline_user_args():  # the last friend goes onto his pedestal right away
+		done.fill(true)
+		placed.fill(true)
+		placed[4] = false
+		_giant.visible = true
+		_giant.process_mode = Node.PROCESS_MODE_INHERIT
+		player.position = _pedestals[4] + (_pedestals[4].normalized() * 3.0)
+		_place.call_deferred(4)
 
 
 func start_round(colour: int) -> void:
@@ -119,6 +130,15 @@ func _free_play() -> void:
 		friends[i].collision_layer = 0
 	_top.visible = false
 	_end.visible = false
+
+
+## Whether booth i shows its arrow, in the park and on the map: a round can start there, or the reset.
+func booth_open(i: int) -> bool:
+	return (state == State.FREE and not done[i]) or state == State.FINALE
+
+
+func giant_shown() -> bool:
+	return _giant.visible
 
 
 ## Index of the booth the player stands at in free play, or -1.
@@ -181,6 +201,8 @@ func _place(i: int) -> void:
 		state = State.FINALE
 		for c in _confetti:
 			c.emitting = true
+		_streamers.start()
+		player.rage(_giant.global_position, "GODMILJAARDE.\nIK HAAT CONFETTI!")
 
 
 ## Everyone home, the giant gone, all booths open again.
@@ -217,8 +239,9 @@ func _show_answer() -> void:
 func _process(delta: float) -> void:
 	_fps.text = "%d fps" % Engine.get_frames_per_second()
 	_controls.text = CAR_CONTROLS if player.car else WALK_CONTROLS
+	_map.visible = state != State.SEARCHING
 	for i in _arrows.size():
-		_arrows[i].visible = (state == State.FREE and not done[i]) or state == State.FINALE
+		_arrows[i].visible = booth_open(i)
 		_arrows[i].rotation.y += 1.5 * delta
 		_arrows[i].position.y = ARROW_HEIGHT + 0.25 * sin(Time.get_ticks_msec() / 400.0 + i)
 	var booth := _at_booth()
@@ -508,6 +531,9 @@ func _build_hud() -> void:
 	_fps.add_theme_color_override("font_color", MUTED)
 	_at(root, _fps, Control.PRESET_TOP_RIGHT, Vector2(-16, 12))
 
+	_map.hunt = self
+	_at(root, _map, Control.PRESET_TOP_LEFT, Vector2(18, 18))
+
 	# end of round
 	_end.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(_end)
@@ -560,6 +586,9 @@ func _build_hud() -> void:
 	ask_col.add_child(keys)
 	_at(root, _ask, Control.PRESET_CENTER, Vector2.ZERO)
 	_ask.visible = false
+
+	_streamers.set_anchors_preset(Control.PRESET_FULL_RECT)  # last: in front of everything else
+	root.add_child(_streamers)
 
 	for c: Control in root.find_children("*", "Control", true, false):
 		c.mouse_filter = Control.MOUSE_FILTER_IGNORE  # clicks go to the game: shouting, capturing the mouse

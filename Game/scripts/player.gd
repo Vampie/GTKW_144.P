@@ -19,6 +19,12 @@ const MODEL := "res://assets/characters/gnome/gnome.glb"  # made in metres, 1.02
 const REACH := 2.5        # how close a gnome car must be to get in
 const HONK := 1.5         # a honk reaches this much further than a shout
 const BAIL_SPEED := 6.0   # getting out faster than this is a bail-out
+const BAIL_ROLLS := 2     # extra rolls on top of the one in BailOut
+# The roll in BailOut runs at a steady 21 degrees per frame from ROLL_START to ROLL_END (measured from
+# the clip): 339 degrees, so jumping back from the end to the start is just one more step of the roll.
+const ROLL_START := 0.333
+const ROLL_END := 1.0
+const BAIL_SLIDE := 1.2   # how quickly the bail-out roll loses its speed
 const HIT_REACH := 1.3    # punches and kicks reach visitors this close in front
 const ZOOM_MIN := 0.35       # mouse wheel: camera distance as a factor of the normal distance
 const ZOOM_MAX := 3.0
@@ -38,6 +44,7 @@ var ride := Ride.NONE
 var pivot := Node3D.new()
 var arm := SpringArm3D.new()
 var ring := MeshInstance3D.new()
+var balloon := ComicBalloon.new()
 var charge := -1.0      # seconds the shout button is held; below 0 when not shouting
 var shout_left := 0.0   # seconds left of the shout animation
 var shouts := 0         # shouts this round; the hunt resets it
@@ -46,6 +53,7 @@ var _zoom := 1.0            # set with the mouse wheel; kept when getting in or 
 var _distance := 4.0        # normal camera distance: 4 m on foot, 6 m in a car
 var _ride_time := 0.0       # seconds into getting in, out or bailing out
 var _bail_velocity := Vector3.ZERO
+var _rolls_left := 0
 var _action_left := 0.0     # a one-shot (land, punch, kick) is playing; the gnome stands still meanwhile
 var _hit_in := -1.0         # seconds until a punch or kick lands; below 0 when there is none
 var _air_time := 0.0
@@ -74,6 +82,11 @@ func _ready() -> void:
 	cam.far = 900.0
 	arm.add_child(cam)
 	_make_ring()
+	var layer := CanvasLayer.new()
+	balloon.speaker = self
+	balloon.head = 1.0
+	layer.add_child(balloon)
+	add_child(layer)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
@@ -113,6 +126,20 @@ func zoom(factor: float) -> void:
 	_zoom = clampf(_zoom * factor, ZOOM_MIN, ZOOM_MAX)
 
 
+## The finale (hunt.gd): the camera swings round to target, the gnome turns to the camera,
+## stamps angrily and shouts words, in a comic balloon.
+func rage(target: Vector3, words: String) -> void:
+	var to := target - global_position
+	var yaw := atan2(-to.x, -to.z)  # the camera hangs behind the player (+Z of the pivot), so it looks at target
+	yaw = pivot.rotation.y + wrapf(yaw - pivot.rotation.y, -PI, PI)  # turn the short way round
+	create_tween().tween_property(pivot, "rotation", Vector3(0.25, yaw, 0.0), 1.2).set_trans(Tween.TRANS_SINE)
+	_looked_at = Time.get_ticks_msec()
+	model.rotation.y = yaw  # facing the camera
+	velocity = Vector3.ZERO
+	_action("angry")
+	balloon.show_text(words, 4.0)
+
+
 # --- the gnome car ---
 
 func get_in(c: Car) -> void:
@@ -139,7 +166,9 @@ func get_out() -> void:
 		_bail_velocity = car.forward() * car.speed * 0.5 + car.global_basis.x * 4.0
 		collision_layer = 2
 		collision_mask = 1
+		model.rotation.y = car.rotation.y - PI / 2.0  # facing the car: BailOut falls back out of the door, head first, across the car
 		play("bail", 1.0, true, 0.0)
+		_rolls_left = BAIL_ROLLS
 	else:
 		car.speed = 0.0
 		play("exit", 1.0, true, 0.0)
@@ -176,10 +205,13 @@ func _ride(delta: float) -> void:
 		Ride.BAIL:
 			velocity.x = _bail_velocity.x
 			velocity.z = _bail_velocity.z
-			_bail_velocity *= exp(-2.5 * delta)
+			_bail_velocity *= exp(-BAIL_SLIDE * delta)
 			fall(delta)
 			move_and_slide()
-			if _ride_time >= _length("bail"):
+			if _rolls_left > 0 and anim.current_animation_position >= ROLL_END:
+				anim.seek(ROLL_START, true)
+				_rolls_left -= 1
+			if _ride_time >= _length("bail") + BAIL_ROLLS * (ROLL_END - ROLL_START):
 				_on_foot()
 
 

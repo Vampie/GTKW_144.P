@@ -6,13 +6,13 @@ extends Node3D
 ## Everything placed at random uses a fixed seed, so the park is the same every run.
 
 const SEED := 144
-const SIZE := 250.0        # the park runs from -SIZE to SIZE on x and z
+const SIZE := 200.0        # the park runs from -SIZE to SIZE on x and z
 const POND_R := 30.0
 const INNER_R := 50.0      # path ring around the pond
-const OUTER_R := 200.0     # big path ring
-const ROAD_IN := 255.0     # inner edge of the street around the park
+const OUTER_R := 150.0     # big path ring
+const ROAD_IN := SIZE + 5.0     # inner edge of the street around the park
 const ROAD_W := 10.0       # street width, also the size of one road tile
-const BUILD_LINE := 269.0  # front of the buildings; nobody gets further
+const BUILD_LINE := SIZE + 19.0  # front of the buildings; nobody gets further
 
 # Model scales: Kenney kits are not in metres, people are about 1.7 m.
 const TREE_SCALE := Vector2(4.5, 6.5)
@@ -168,13 +168,13 @@ func _paths() -> void:
 func _trees() -> void:
 	var candidates := PackedVector3Array()
 	for g in 30:  # groves
-		var c := _random_point(225.0)
+		var c := _random_point(SIZE - 25.0)
 		for t in rng.randi_range(5, 14):
 			candidates.append(c + Vector3(rng.randfn(0.0, 10.0), 0.0, rng.randfn(0.0, 10.0)))
 	for t in 90:  # single trees
-		candidates.append(_random_point(240.0))
+		candidates.append(_random_point(SIZE - 10.0))
 	for p in candidates:
-		if absf(p.x) > 242.0 or absf(p.z) > 242.0 or p.length() < INNER_R + 6.0:
+		if absf(p.x) > SIZE - 8.0 or absf(p.z) > SIZE - 8.0 or p.length() < INNER_R + 6.0:
 			continue
 		if path_clearance(p) < 3.0 or _near(trees, p, 4.0):
 			continue
@@ -242,7 +242,7 @@ func _plants() -> void:
 			_place("res://assets/nature/%s.glb" % BUSHES[rng.randi() % BUSHES.size()], p, rng.randf() * TAU,
 				Vector3.ONE * rng.randf_range(3.0, 4.5))
 	for n in 700:  # tufts of grass
-		var p := _random_point(245.0)
+		var p := _random_point(SIZE - 5.0)
 		if path_clearance(p) > 0.5 and p.length() > POND_R + 3.0:
 			_place("res://assets/nature/%s.glb" % GRASS[rng.randi() % GRASS.size()], p, rng.randf() * TAU, Vector3.ONE * 3.0)
 
@@ -255,7 +255,7 @@ func _streets() -> void:
 		var d := _dir(k * TAU / 4)  # from the park to this street
 		var along := d.cross(Vector3.UP)
 		var yaw := k * TAU / 4
-		for n in range(-25, 26):
+		for n in range(-int(ROAD_IN / ROAD_W), int(ROAD_IN / ROAD_W) + 1):
 			_place("res://assets/roads/road-straight.glb", d * mid + along * n * ROAD_W, yaw + ROAD_TURN, tile)
 		_place("res://assets/roads/road-crossroad.glb", (d + along) * mid, 0.0, tile)
 		# pavement on both sides of the street
@@ -294,8 +294,8 @@ func _cars() -> void:
 	for k in 4:
 		var d := _dir(k * TAU / 4)
 		var along := d.cross(Vector3.UP)
-		var x := -245.0 + rng.randf_range(0.0, 20.0)
-		while x < 245.0:
+		var x := -(SIZE - 5.0) + rng.randf_range(0.0, 20.0)
+		while x < SIZE - 5.0:
 			var car := Car.new()  # each car is its own node, so the player can drive it away
 			car.model_path = "res://assets/cars/%s.glb" % CARS[rng.randi() % CARS.size()]
 			car.transform = Transform3D(Basis(Vector3.UP, atan2(along.x, along.z)), d * (ROAD_IN + ROAD_W - 2.0) + along * x)
