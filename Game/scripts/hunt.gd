@@ -6,9 +6,9 @@ extends Node
 ## has to find the one in the booth's colour. The others answer shouts too, but say it is not them.
 ## A friend that has been found follows the player (Friend.follow), and his booth closes.
 ## Once all five are found, a huge golden gnome appears in the pond with a pedestal per colour
-## around it; O at a pedestal puts that colour's friend on it. With all five placed the giant spews
+## around it; E (or O) at a pedestal puts that colour's friend on it. With all five placed the giant spews
 ## confetti from its mouth until the player resets everything at a phone booth (asked yup / nope).
-## A round ends within FOUND_DISTANCE of the right friend; Enter goes back to free play.
+## A round ends within FOUND_DISTANCE of the right friend; E (or Enter) goes back to free play.
 ## Test option "--found" starts a blue round with the blue friend right next to the player.
 
 enum State { FREE, SEARCHING, FOUND, FINALE }
@@ -144,14 +144,19 @@ func _unhandled_input(event: InputEvent) -> void:
 					_start_over()
 			get_viewport().set_input_as_handled()
 			return
+		var used := true
 		if key == KEY_E and _at_booth() >= 0 and state == State.FINALE:
 			_open_ask()
 		elif key == KEY_E and _at_booth() >= 0 and not done[_at_booth()]:
 			start_round(_at_booth())
-		elif key in [KEY_ENTER, KEY_KP_ENTER] and state == State.FOUND:
+		elif key in [KEY_ENTER, KEY_KP_ENTER, KEY_E] and state == State.FOUND:
 			_free_play()
-		elif event.physical_keycode == KEY_O and _at_pedestal() >= 0:
+		elif key in [KEY_O, KEY_E] and _at_pedestal() >= 0:
 			_place(_at_pedestal())
+		else:
+			used = false
+		if used:  # the hunt gets keys before the player: E then does not also get in or out of a car
+			get_viewport().set_input_as_handled()
 
 
 ## Index of a pedestal the player stands at whose friend still follows him, or -1.
@@ -226,7 +231,7 @@ func _process(delta: float) -> void:
 		_prompt.text = "E  instappen"
 	var pedestal := _at_pedestal()
 	if pedestal >= 0:
-		_prompt.text = "O  zet de %s kabouter op zijn sokkel" % COLORS[pedestal][0]
+		_prompt.text = "E  zet de %s kabouter op zijn sokkel" % COLORS[pedestal][0]
 	_prompt_panel.visible = booth >= 0 or pedestal >= 0 or (player.nearby_car != null and player.car == null)
 	if state != State.SEARCHING:
 		return
@@ -245,10 +250,10 @@ func _process(delta: float) -> void:
 		done[target] = true
 		friends[target].follow(player, done.count(true) - 1)
 		_head.text = "Gevonden!"
-		_again.text = "Enter: terug naar het park  ·  een nieuwe ronde start bij een telefooncel"
+		_again.text = "E: terug naar het park  ·  een nieuwe ronde start bij een telefooncel"
 		if not false in done:  # all five found: they stay with the player and the golden gnome appears
 			_head.text = "Alle vijf gevonden!"
-			_again.text = "Enter: breng ze naar de gouden kabouter in de vijver en zet ze met O op hun sokkel"
+			_again.text = "E: breng ze naar de gouden kabouter in de vijver en zet ze met E op hun sokkel"
 			_giant.visible = true
 			_giant.process_mode = Node.PROCESS_MODE_INHERIT
 		_end_time.text = _clock(time)
@@ -475,7 +480,11 @@ func _build_hud() -> void:
 	row.add_child(_divider())
 	row.add_child(_stat("TIJD", _time_value, 30))
 	row.add_child(_stat("GEROEPEN", _shout_value, 30))
-	_at(root, _top, Control.PRESET_CENTER_TOP, Vector2(0, 18))
+	if Touch.wanted():  # top left, where the thumbs don't go, and bigger for the small screen
+		_at(root, _top, Control.PRESET_TOP_LEFT, Vector2(18, 18))
+		_top.scale = Vector2(1.5, 1.5)
+	else:
+		_at(root, _top, Control.PRESET_CENTER_TOP, Vector2(0, 18))
 
 	# bottom: controls
 	var hint := _panel(Color(PANEL, 0.55), 10)
@@ -484,7 +493,7 @@ func _build_hud() -> void:
 	_controls.text = WALK_CONTROLS
 	hint.add_child(_controls)
 	_at(root, hint, Control.PRESET_CENTER_BOTTOM, Vector2(0, -16))
-	hint.visible = not OS.has_feature("mobile")  # keyboard keys; phones get touch.gd's buttons
+	hint.visible = not Touch.wanted()  # keyboard keys; phones get touch.gd's buttons
 
 	# "E: instappen" when standing next to a car
 	_prompt_panel = _panel(PANEL, 12)
@@ -546,7 +555,7 @@ func _build_hud() -> void:
 	_nope = _panel(Color(1, 1, 1, 0.08), 10)
 	_nope.add_child(_label("Nope", 22, Color.WHITE))
 	answers.add_child(_nope)
-	var keys := _label("←  →  kiezen   ·   Enter  bevestigen", 13, MUTED)
+	var keys := _label("Joystick  kiezen   ·   E  bevestigen" if Touch.wanted() else "←  →  kiezen   ·   Enter  bevestigen", 13, MUTED)
 	keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ask_col.add_child(keys)
 	_at(root, _ask, Control.PRESET_CENTER, Vector2.ZERO)
@@ -615,6 +624,7 @@ func _divider() -> ColorRect:
 func _at(parent: Control, child: Control, preset: Control.LayoutPreset, offset: Vector2) -> void:
 	parent.add_child(child)
 	child.set_anchors_and_offsets_preset(preset, Control.PRESET_MODE_MINSIZE)
-	child.grow_horizontal = Control.GROW_DIRECTION_BOTH if preset in [Control.PRESET_CENTER_TOP, Control.PRESET_CENTER_BOTTOM, Control.PRESET_CENTER] else Control.GROW_DIRECTION_BEGIN
+	child.grow_horizontal = Control.GROW_DIRECTION_BOTH if preset in [Control.PRESET_CENTER_TOP, Control.PRESET_CENTER_BOTTOM, Control.PRESET_CENTER] \
+		else (Control.GROW_DIRECTION_END if preset == Control.PRESET_TOP_LEFT else Control.GROW_DIRECTION_BEGIN)
 	child.grow_vertical = Control.GROW_DIRECTION_BEGIN if preset == Control.PRESET_CENTER_BOTTOM else (Control.GROW_DIRECTION_BOTH if preset == Control.PRESET_CENTER else Control.GROW_DIRECTION_END)
 	child.position += offset

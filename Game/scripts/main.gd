@@ -8,7 +8,7 @@ extends Node3D
 ##   --cam=x,y,z,tx,ty,tz   look from x,y,z at tx,ty,tz
 ##   --found  the friend stands next to the player (see hunt.gd)
 ##   --drive  the player gets into the nearest car and drives off at full gas
-##   --touch  show the phone controls (touch.gd) on the desktop
+##   --touch  show the phone controls and phone HUD (touch.gd) on the desktop
 
 const PEOPLE := 120
 const SITTING := 20
@@ -43,7 +43,7 @@ func _ready() -> void:
 	add_child(hunt)
 	if OS.has_feature("mobile"):
 		Engine.time_scale = PHONE_SPEED
-	if OS.has_feature("mobile") or "--touch" in args:
+	if Touch.wanted():
 		var touch := Touch.new()
 		touch.player = player
 		var layer := CanvasLayer.new()

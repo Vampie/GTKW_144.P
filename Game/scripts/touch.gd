@@ -11,17 +11,22 @@ const STICK := 90.0  # stick radius at a screen height of 720 px; everything sca
 const DEAD := 0.3    # part of the radius before the stick presses a key
 const RUN_AT := 0.9  # from this part of the radius it also sprints
 # label, keys, centre from the bottom-right corner and radius (at 720 px). No keys: the shout.
-# "E" also sends Enter and O: the hunt asks for those keys (back to the park, place a friend).
 const BUTTONS := [
 	["Roep", [], Vector2(-110, -110), 62.0],
 	["Spring", [KEY_SPACE], Vector2(-250, -80), 44.0],
 	["Stomp", [KEY_F], Vector2(-235, -210), 40.0],
 	["Trap", [KEY_G], Vector2(-110, -255), 40.0],
-	["E", [KEY_E, KEY_ENTER, KEY_O], Vector2(-375, -80), 40.0],
+	["E", [KEY_E], Vector2(-375, -80), 40.0],
 	["Sluip", [KEY_CTRL], Vector2(-60, -365), 34.0],
 ]
 
 var player: Player
+
+
+## Whether the game shows these controls: on phones, or on the desktop with --touch.
+static func wanted() -> bool:
+	return OS.has_feature("mobile") or "--touch" in OS.get_cmdline_user_args()
+
 var _stick_finger := -1
 var _stick_from := Vector2.ZERO
 var _stick_at := Vector2.ZERO

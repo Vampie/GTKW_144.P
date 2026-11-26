@@ -22,6 +22,8 @@ boot_splash/minimum_display_time=2000
 
 window/size/viewport_width=1600
 window/size/viewport_height=900
+window/stretch/mode.mobile="canvas_items"
+window/stretch/aspect.mobile="expand"
 window/handheld/orientation=4
 
 [filesystem]
