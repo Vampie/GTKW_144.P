@@ -8,6 +8,7 @@ extends Node3D
 ##   --cam=x,y,z,tx,ty,tz   look from x,y,z at tx,ty,tz
 ##   --found  the friend stands next to the player (see hunt.gd)
 ##   --drive  the player gets into the nearest car and drives off at full gas
+##   --touch  show the phone controls (touch.gd) on the desktop
 
 const PEOPLE := 120
 const SITTING := 20
@@ -19,6 +20,7 @@ const TYPES := [Visitor.Type.CURIOUS, Visitor.Type.CURIOUS, Visitor.Type.CURIOUS
 	Visitor.Type.SKITTISH, Visitor.Type.SKITTISH, Visitor.Type.SKITTISH,
 	Visitor.Type.GRUMPY, Visitor.Type.GRUMPY, Visitor.Type.HEADPHONES, Visitor.Type.HEADPHONES]
 const PLAYER_START := Vector3(0, 0, 64)  # on the south path, close to the benches around the pond
+const PHONE_SPEED := 0.7  # on phones the whole game runs at this speed: on the small screen it felt too fast
 
 var park := Park.new()
 var player := Player.new()
@@ -39,6 +41,14 @@ func _ready() -> void:
 	hunt.park = park
 	hunt.player = player
 	add_child(hunt)
+	if OS.has_feature("mobile"):
+		Engine.time_scale = PHONE_SPEED
+	if OS.has_feature("mobile") or "--touch" in args:
+		var touch := Touch.new()
+		touch.player = player
+		var layer := CanvasLayer.new()
+		layer.add_child(touch)
+		add_child(layer)
 	if "--demo" in args:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE  # so a moving mouse doesn't turn the camera
 	for a in args:

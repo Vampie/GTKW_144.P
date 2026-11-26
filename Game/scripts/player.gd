@@ -79,7 +79,7 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
-	if event is InputEventMouseMotion and captured:
+	if (event is InputEventMouseMotion and captured) or event is InputEventScreenDrag:  # drag: touch.gd
 		pivot.rotation.y -= event.relative.x * MOUSE_SPEED
 		_looked_at = Time.get_ticks_msec()
 		pivot.rotation.x = clampf(pivot.rotation.x - event.relative.y * MOUSE_SPEED, -1.2, 0.3)
@@ -97,7 +97,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_G:
 				_strike("kick", 0.48)
 	elif event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-		_zoom = clampf(_zoom * (0.9 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.1), ZOOM_MIN, ZOOM_MAX)
+		zoom(0.9 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.1)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if not captured:
 			if event.pressed:
@@ -106,6 +106,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			start_shout()
 		else:
 			release_shout()
+
+
+## Moves the camera closer (factor below 1) or further away: mouse wheel, or pinching (touch.gd).
+func zoom(factor: float) -> void:
+	_zoom = clampf(_zoom * factor, ZOOM_MIN, ZOOM_MAX)
 
 
 # --- the gnome car ---

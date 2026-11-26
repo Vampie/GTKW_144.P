@@ -484,6 +484,7 @@ func _build_hud() -> void:
 	_controls.text = WALK_CONTROLS
 	hint.add_child(_controls)
 	_at(root, hint, Control.PRESET_CENTER_BOTTOM, Vector2(0, -16))
+	hint.visible = not OS.has_feature("mobile")  # keyboard keys; phones get touch.gd's buttons
 
 	# "E: instappen" when standing next to a car
 	_prompt_panel = _panel(PANEL, 12)
